@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Expense Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    .expense-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .expense-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* ✅ Custom dropdown list styling */
+    select {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+    select option {
+      background-color: #1e293b; /* dark slate */
+      color: white;
+    }
+    select option:checked {
+      background-color: #6366f1; /* indigo highlight */
+      color: white;
+    }
+  </style>
+</head>
+<body class="p-0 m-0">
+  <div class="container mx-auto max-w-4xl px-4 py-8">
+    <header class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-white mb-2">Personal Expense Tracker</h1>
+      <p class="text-white/90 text-lg">Track your spending, set budgets, and achieve financial goals.</p>
+    </header>
+
+    <!-- Budget Section -->
+    <section id="budget-section" class="bg-white/10 backdrop-blur-md rounded-xl p-6 mb-6 fade-in">
+      <h2 class="text-2xl font-semibold text-white mb-4">Budget Settings</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="monthly-budget" class="block text-white mb-2">Monthly Budget ($)</label>
+          <input type="number" id="monthly-budget" class="w-full p-3 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white" placeholder="Enter monthly budget" min="0">
+        </div>
+        <div>
+          <label for="savings-goal" class="block text-white mb-2">Savings Goal ($)</label>
+          <input type="number" id="savings-goal" class="w-full p-3 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white" placeholder="Enter savings goal" min="0">
+        </div>
+      </div>
+      <button id="set-budget" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Set Budget</button>
+    </section>
+
+    <!-- Add Expense Form -->
+    <section id="expense-form" class="bg-white/10 backdrop-blur-md rounded-xl p-6 mb-6 fade-in">
+      <h2 class="text-2xl font-semibold text-white mb-4">Add New Expense</h2>
+      <form id="add-expense-form" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label for="description" class="block text-white mb-2">Description</label>
+            <input type="text" id="description" class="w-full p-3 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white" placeholder="e.g., Grocery shopping" required>
+          </div>
+          <div>
+            <label for="amount" class="block text-white mb-2">Amount ($)</label>
+            <input type="number" id="amount" class="w-full p-3 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white" placeholder="0.00" step="0.01" min="0" required>
+          </div>
+          <div>
+            <label for="category" class="block text-white mb-2">Category</label>
+            <select id="category" class="w-full p-3 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-white" required>
+              <option value="" disabled selected>Select category</option>
+              <option value="Food">Food</option>
+              <option value="Transportation">Transportation</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Bills">Bills</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Health">Health</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="md:col-span-2 lg:col-span-1">
+            <label for="date" class="block text-white mb-2">Date</label>
+            <input type="date" id="date" class="w-full p-3 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white" required>
+          </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 flex-1">Add Expense</button>
+          <button type="reset" id="clear-form" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 flex-1">Clear Form</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Summary Section -->
+    <section id="summary" class="bg-white/10 backdrop-blur-md rounded-xl p-6 mb-6 fade-in">
+      <h2 class="text-2xl font-semibold text-white mb-4">Summary</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="text-center">
+          <p class="text-white/80">Total Expenses</p>
+          <p id="total-expenses" class="text-3xl font-bold text-white">$0.00</p>
+        </div>
+        <div class="text-center">
+          <p class="text-white/80">Monthly Budget</p>
+          <p id="monthly-budget-display" class="text-3xl font-bold text-white">$0.00</p>
+        </div>
+        <div class="text-center">
+          <p class="text-white/80">Remaining Budget</p>
+          <p id="remaining-budget" class="text-3xl font-bold text-white">$0.00</p>
+        </div>
+        <div class="text-center">
+          <p class="text-white/80">Savings Goal</p>
+          <p id="actual-savings" class="text-3xl font-bold text-white">$0.00</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section id="filters" class="bg-white/10 backdrop-blur-md rounded-xl p-6 mb-6 fade-in">
+      <h2 class="text-2xl font-semibold text-white mb-4">Filters</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label for="filter-category" class="block text-white mb-2">Category</label>
+          <select id="filter-category" class="w-full p-3 rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-white">
+            <option value="">All Categories</option>
+            <option value="Food">Food</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Bills">Bills</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Health">Health</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="filter-start-date" class="block text-white mb-2">Start Date</label>
+          <input type="date" id="filter-start-date" class="w-full p-3 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white">
+        </div>
+        <div>
+          <label for="filter-end-date" class="block text-white mb-2">End Date</label>
+          <input type="date" id="filter-end-date" class="w-full p-3 rounded-lg bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white">
+        </div>
+      </div>
+      <button id="apply-filter" class="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Apply Filter</button>
+      <button id="clear-filter" class="mt-4 ml-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Clear Filter</button>
+    </section>
+
+    <!-- Expense List -->
+    <section id="expense-list" class="bg-white/10 backdrop-blur-md rounded-xl p-6 fade-in">
+      <h2 class="text-2xl font-semibold text-white mb-4">Expense History</h2>
+      <div id="expense-container" class="space-y-4"></div>
+      <button id="export-data" class="mt-4 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300">Export to CSV</button>
+    </section>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+      let monthlyBudget = parseFloat(localStorage.getItem('monthlyBudget')) || 0;
+      let savingsGoal = parseFloat(localStorage.getItem('savingsGoal')) || 0;
+
+      const form = document.getElementById('add-expense-form');
+      const descriptionInput = document.getElementById('description');
+      const amountInput = document.getElementById('amount');
+      const categoryInput = document.getElementById('category');
+      const dateInput = document.getElementById('date');
+      const clearFormButton = document.getElementById('clear-form');
+      const setBudgetButton = document.getElementById('set-budget');
+      const monthlyBudgetInput = document.getElementById('monthly-budget');
+      const savingsGoalInput = document.getElementById('savings-goal');
+      const totalExpensesDisplay = document.getElementById('total-expenses');
+      const monthlyBudgetDisplay = document.getElementById('monthly-budget-display');
+      const remainingBudgetDisplay = document.getElementById('remaining-budget');
+      const actualSavingsDisplay = document.getElementById('actual-savings');
+      const filterCategory = document.getElementById('filter-category');
+      const filterStartDate = document.getElementById('filter-start-date');
+      const filterEndDate = document.getElementById('filter-end-date');
+      const applyFilterButton = document.getElementById('apply-filter');
+      const clearFilterButton = document.getElementById('clear-filter');
+      const exportButton = document.getElementById('export-data');
+
+      dateInput.value = new Date().toISOString().split('T')[0];
+
+      updateDisplays();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const expense = {
+          id: Date.now(),
+          description: descriptionInput.value,
+          amount: parseFloat(amountInput.value),
+          category: categoryInput.value,
+          date: dateInput.value
+        };
+        expenses.push(expense);
+        saveData();
+        form.reset();
+        updateDisplays();
+        renderExpenses();
+        dateInput.value = new Date().toISOString().split('T')[0];
+      });
+
+      clearFormButton.addEventListener('click', () => {
+        form.reset();
+        dateInput.value = new Date().toISOString().split('T')[0];
+      });
+
+      setBudgetButton.addEventListener('click', () => {
+        monthlyBudget = parseFloat(monthlyBudgetInput.value) || 0;
+        savingsGoal = parseFloat(savingsGoalInput.value) || 0;
+        localStorage.setItem('monthlyBudget', monthlyBudget);
+        localStorage.setItem('savingsGoal', savingsGoal);
+        updateDisplays();
+      });
+
+      applyFilterButton.addEventListener('click', () => {
+        renderExpenses();
+      });
+
+      clearFilterButton.addEventListener('click', () => {
+        filterCategory.value = '';
+        filterStartDate.value = '';
+        filterEndDate.value = '';
+        renderExpenses();
+      });
+
+      exportButton.addEventListener('click', () => {
+        exportToCSV();
+      });
+
+      function saveData() {
+        localStorage.setItem('expenses', JSON.stringify(expenses));
+      }
+
+      function updateDisplays() {
+        const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        const remaining = monthlyBudget - total;
+        const savings = monthlyBudget - total;
+
+        totalExpensesDisplay.textContent = `$${total.toFixed(2)}`;
+        monthlyBudgetDisplay.textContent = `$${monthlyBudget.toFixed(2)}`;
+        remainingBudgetDisplay.textContent = `$${Math.max(0, remaining).toFixed(2)}`;
+        actualSavingsDisplay.textContent = `$${savings.toFixed(2)}`;
+
+        monthlyBudgetInput.value = monthlyBudget;
+        savingsGoalInput.value = savingsGoal;
+      }
+
+      function renderExpenses() {
+        const container = document.getElementById('expense-container');
+        const filtered = expenses.filter(exp => {
+          const categoryMatch = !filterCategory.value || exp.category === filterCategory.value;
+          const startMatch = !filterStartDate.value || exp.date >= filterStartDate.value;
+          const endMatch = !filterEndDate.value || exp.date <= filterEndDate.value;
+          return categoryMatch && startMatch && endMatch;
+        }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        container.innerHTML = '';
+        if (filtered.length === 0) {
+          container.innerHTML = '<p class="text-white text-center">No expenses match the filters.</p>';
+          return;
+        }
+
+        filtered.forEach(exp => {
+          const card = document.createElement('div');
+          card.className = 'expense-card bg-white/10 border border-white/20 rounded-lg p-4 shadow-sm';
+          card.innerHTML = `
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-bold text-white">${exp.description}</h3>
+                <p class="text-white/70">${exp.category} - ${exp.date}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-xl font-bold text-white">$${exp.amount.toFixed(2)}</p>
+                <button class="delete-button bg-red-600 hover:bg-red-700 text-white text-sm py-1 px-3 rounded mt-1" data-id="${exp.id}">Delete</button>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        document.querySelectorAll('.delete-button').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = parseInt(e.target.dataset.id);
+            const index = expenses.findIndex(exp => exp.id === id);
+            if (index > -1) {
+              expenses.splice(index, 1);
+              saveData();
+              updateDisplays();
+              renderExpenses();
+            }
+          });
+        });
+      }
+
+      function exportToCSV() {
+        let csv = 'Description,Amount,Category,Date\n';
+        expenses.forEach(exp => {
+          csv += `${exp.description},${exp.amount},${exp.category},${exp.date}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('href', url);
+        a.setAttribute('download', 'expenses.csv');
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+
+      renderExpenses();
+    });
+  </script>
+</body>
+</html>
